@@ -22,7 +22,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
   rolllist =[]
   pitchlist =[]
   yawlist =[]
-  while viewer.is_running() and timestep < 750:
+  while viewer.is_running() and timestep < 1300:
     i += 1
     timestep += 1
     timesteplist.append(timestep)
@@ -31,10 +31,14 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
     # mj_step can be replaced with code that also evaluates
     # a policy and applies a control signal before stepping the physics.
     mujoco.mj_step(m, d)
-    if i > 100 and i < 500:
+    if i > 100 and i < 300:
       control_signals = np.array([4, 0, 0.02, 0])
-    elif i > 500:
-      i = 0
+    elif i > 400 and i < 600:
+      control_signals = np.array([4, 0.02, 0, 0])
+    elif i > 700 and i < 900:
+      control_signals = np.array([4, 0, -0.02, 0])
+    elif i > 1000 and i < 1200:
+      control_signals = np.array([4, -0.02, 0, 0])
     else:
       control_signals = np.array([0, 0, 0, 0])
     
@@ -69,11 +73,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
     if time_until_next_step > 0:
       time.sleep(time_until_next_step)
 
-print(xlist)
-print(ylist)
-print(zlist)
-print("Time step list:")
-print(timesteplist)
+print(rolllist)
 
 # Create a figure and subplots
 fig, axs = plt.subplots(6, 1, figsize=(8, 10))
@@ -81,39 +81,39 @@ fig, axs = plt.subplots(6, 1, figsize=(8, 10))
 # Plot x position over time
 axs[0].plot(timesteplist, xlist)
 axs[0].set_ylabel('X Position')
-axs[0].set_ylim([-5, 5])
+axs[0].set_ylim([-1, 1])
 
 # Plot y position over time
 axs[1].plot(timesteplist, ylist)
 axs[1].set_ylabel('Y Position')
-axs[1].set_ylim([-5, 5])
+axs[1].set_ylim([-1, 1])
 
 # Plot z position over time
 axs[2].plot(timesteplist, zlist)
 axs[2].set_ylabel('Z Position')
 axs[2].set_xlabel('Time')
-axs[2].set_ylim([-5, 5])
+axs[2].set_ylim([-1, 1])
 
 # Plot roll position over time
 axs[3].plot(timesteplist, rolllist)
 axs[3].set_ylabel('Roll')
-axs[3].set_ylim([-10, 10])
+axs[3].set_ylim([-5, 5])
 
 # Plot pitch position over time
 axs[4].plot(timesteplist, pitchlist)
 axs[4].set_ylabel('Pitch')
-axs[4].set_ylim([-10, 10])
+axs[4].set_ylim([-5, 5])
 
 # Plot yaw position over time
 axs[5].plot(timesteplist, yawlist)
 axs[5].set_ylabel('Yaw')
-axs[5].set_ylim([-10, 10])
+axs[5].set_ylim([-5, 5])
 
 # Adjust the layout to avoid overlapping labels
 #plt.tight_layout()
 
 # Show the plot
 plt.subplots_adjust(top=0.9)
-fig.suptitle('Position of Drone While Moving', fontsize=16)
-plt.savefig('moving_position_plot.png', dpi=300)
+fig.suptitle('Position of Drone While Turning', fontsize=16)
+plt.savefig('turning_position_plot.png', dpi=300)
 plt.show()
