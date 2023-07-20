@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import gym
 
 import mujoco
 import mujoco.viewer
@@ -31,14 +32,8 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
     # mj_step can be replaced with code that also evaluates
     # a policy and applies a control signal before stepping the physics.
     mujoco.mj_step(m, d)
-    if i > 100 and i < 300:
-      control_signals = np.array([4, 0, 0.02, 0])
-    elif i > 400 and i < 600:
-      control_signals = np.array([4, 0.02, 0, 0])
-    elif i > 700 and i < 900:
-      control_signals = np.array([4, 0, -0.02, 0])
-    elif i > 1000 and i < 1200:
-      control_signals = np.array([4, -0.02, 0, 0])
+    if i > 0 and i < 1300:
+      control_signals = np.array([2, 0, 0, 0])
     else:
       control_signals = np.array([0, 0, 0, 0])
     
@@ -74,7 +69,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
       time.sleep(time_until_next_step)
 
 print(rolllist)
-
+"""
 # Create a figure and subplots
 fig, axs = plt.subplots(6, 1, figsize=(8, 10))
 
@@ -117,3 +112,4 @@ plt.subplots_adjust(top=0.9)
 fig.suptitle('Position of Drone While Turning', fontsize=16)
 plt.savefig('turning_position_plot.png', dpi=300)
 plt.show()
+"""
