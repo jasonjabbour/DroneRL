@@ -1,1 +1,5 @@
 python==3.10
+mujoco
+stable_baselines3
+shimmy==0.2.1
+tensorboard

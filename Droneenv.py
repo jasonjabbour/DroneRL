@@ -20,9 +20,9 @@ class DroneEnv(gym.Env):
     >>> EnvTest.observation_space=spaces.Box(low=-1, high=1, shape=(3,4))
     >>> EnvTest.action_space=spaces.Discrete(2)
     """
-    self.eps_timestep = 500
+    self.eps_timestep = 3000
 
-    self.action_space = spaces.Box(low=0.0, high=4.0, shape=(1, ), dtype=np.float32)
+    self.action_space = spaces.Box(low=0.0, high=2.0, shape=(1, ), dtype=np.float32)
     self.observation_space = spaces.Box(low=-100.0, high=100.0, shape=(6, ), dtype=np.float32)
     
     self.mujocomodel = mujoco.MjModel.from_xml_path('Models/dronesimple.xml')
@@ -47,8 +47,9 @@ class DroneEnv(gym.Env):
     step_start = time.time()
 
     mujoco.mj_step(self.mujocomodel, self.mujocodata)
-    control_signals = np.array([4, 0.2, 0, 0])
+    control_signals = np.array([(3 + action[0]), 0, 0, 0])
     self.mujocodata.ctrl[:] = control_signals
+    #print(action[0])
 
     with self.viewer.lock():
       self.viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(self.mujocodata.time % 2)
@@ -104,10 +105,16 @@ class DroneEnv(gym.Env):
     y = observation[1]
     z = observation[2]
 
-    if (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 1) and (z < 2):
+    if (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.5) and (z < 0.75):
       return 1
+    elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.25) and (z < 1):
+      return 0.1
+    elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.05) and (z < 1):
+      return 0.01
     else:
       return 0
+    
+
 
 
   def render(self, mode='human', close=False):
