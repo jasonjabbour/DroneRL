@@ -1,13 +1,13 @@
 import time
 import numpy as np
-import gym
-from gym import spaces
+import gymnasium
+from gymnasium import spaces
 
 import mujoco
 import mujoco.viewer
 
 
-class DroneEnv(gym.Env):
+class DroneEnv(gymnasium.Env):
   metadata = {'render.modes': ['human']}
 
   def __init__(self):
@@ -28,7 +28,7 @@ class DroneEnv(gym.Env):
     self.mujocomodel = mujoco.MjModel.from_xml_path('Models/dronesimple.xml')
     self.mujocodata = mujoco.MjData(self.mujocomodel)
 
-    self.viewer = mujoco.viewer.launch_passive(self.mujocomodel, self.mujocodata)
+    #self.viewer = mujoco.viewer.launch_passive(self.mujocomodel, self.mujocodata)
 
 
   def step(self, action):
@@ -51,14 +51,14 @@ class DroneEnv(gym.Env):
     self.mujocodata.ctrl[:] = control_signals
     #print(action[0])
 
-    with self.viewer.lock():
-      self.viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(self.mujocodata.time % 2)
-    self.viewer.sync()
+    #with self.viewer.lock():
+    #  self.viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(self.mujocodata.time % 2)
+    #self.viewer.sync()
 
     # Timestep = 0.01
-    time_until_next_step = self.mujocomodel.opt.timestep - (time.time() - step_start)
-    if time_until_next_step > 0:
-      time.sleep(time_until_next_step)
+    #time_until_next_step = self.mujocomodel.opt.timestep - (time.time() - step_start)
+    #if time_until_next_step > 0:
+    #  time.sleep(time_until_next_step)
 
     x, y, z = self.mujocodata.qpos[0:3]
     roll, pitch, yaw = self.mujocodata.qpos[3:6]
@@ -68,16 +68,17 @@ class DroneEnv(gym.Env):
     reward = self.reward(observation)
     done = False
     info = {}
+    truncated = False
   
     self.step_count +=1
 
     if self.step_count > self.eps_timestep:
       done = True
     
-    return observation, reward, done, info
+    return observation, reward, done, truncated, info
   
 
-  def reset(self):
+  def reset(self, seed=0):
     """
     This method resets the environment to its initial values.
 
@@ -98,7 +99,7 @@ class DroneEnv(gym.Env):
 
     observation = np.array([x, y, z, roll, pitch, yaw])
 
-    return observation
+    return observation, {}
   
   def reward(self, observation):
     x = observation[0]
@@ -109,8 +110,8 @@ class DroneEnv(gym.Env):
       return 1
     elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.25) and (z < 1):
       return 0.1
-    elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.05) and (z < 1):
-      return 0.01
+    elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z < 0.1):
+      return -0.1
     else:
       return 0
     
