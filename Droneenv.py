@@ -20,7 +20,7 @@ class DroneEnv(gymnasium.Env):
     >>> EnvTest.observation_space=spaces.Box(low=-1, high=1, shape=(3,4))
     >>> EnvTest.action_space=spaces.Discrete(2)
     """
-    self.eps_timestep = 3000
+    self.eps_timestep = 1000
 
     self.action_space = spaces.Box(low=0.0, high=2.0, shape=(1, ), dtype=np.float32)
     self.observation_space = spaces.Box(low=-100.0, high=100.0, shape=(6, ), dtype=np.float32)
@@ -110,8 +110,8 @@ class DroneEnv(gymnasium.Env):
       return 1
     elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.25) and (z < 1):
       return 0.1
-    elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z < 0.1):
-      return -0.1
+    elif (x > -0.1) and (x < 0.1) and (y > -0.1) and (y < 0.1) and (z > 0.05) and (z < 1):
+      return 0.02
     else:
       return 0
     

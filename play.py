@@ -40,7 +40,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
         return True
 """
 class SaveOnBestTrainingRewardCallback(BaseCallback):
-    def __init__(self, check_freq: int, save_path: str, checkpoints=[1e6, 10e6, 30e6]):
+    def __init__(self, check_freq: int, save_path: str, checkpoints=[100000, 500000, 1000000]):
         super(SaveOnBestTrainingRewardCallback, self).__init__()
         self.check_freq = check_freq
         self.save_path = save_path
@@ -53,7 +53,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
         if self.n_calls % self.check_freq == 0:
             # Accessing the Monitor's method through VecNormalize, DummyVecEnv
             ep_infos = self.model.get_env().get_attr('get_episode_rewards')[0]()
-            print(ep_infos)
+            #print(ep_infos)
             if len(ep_infos) >= 100:
                 current_reward = sum(ep_infos[-100:]) / 100
                 current_step = self.model.num_timesteps
@@ -63,14 +63,14 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
                     self.best_reward = current_reward
                     # Temporarily save this as the best model so far
                     #self.best_model_path = os.path.join(self.save_path, f"temp_best_model_until_{current_step}")
-                    self.best_model_path = self.save_path+ f"/temp_best_model_until_{self.next_checkpoint}"
+                    self.best_model_path = self.save_path+ f"/temp_best_model_until_{self.next_checkpoint}.zip"
                     self.model.save(self.best_model_path)
 
                 # Check if we have reached the next checkpoint
                 if current_step >= self.next_checkpoint:
                     if self.best_model_path:
                         # Rename the saved model to reflect the checkpoint
-                        os.rename(self.best_model_path+".zip", self.save_path+ f"/best_model_until_{self.next_checkpoint}.zip")
+                        os.rename(self.best_model_path, self.save_path+ f"/best_model_until_{self.next_checkpoint}.zip") #+.zip after first bestmodel
                         print(f"Model saved with best reward {self.best_reward} up to step {self.next_checkpoint}")
                         # Reset best_reward for the next interval
                         self.best_reward = float('-inf')
@@ -85,7 +85,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
 def test():
     timesteps = 10000
     env = DroneEnv()
-    loaded_model = SAC.load('./policies/policy9/policy9.zip')
+    loaded_model = PPO.load('./policies/policy19/policy19.zip')
     observation, _ = env.reset()
     for timestep in range(timesteps):
         #print(timestep)
@@ -103,16 +103,23 @@ def train():
     env = Monitor(env)
     env = DummyVecEnv([lambda:env])
     env = VecNormalize(env)
-    model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="policies/policy10")
+    model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="policies/policy15")
     #checkpoint_callback = CheckpointCallback(save_freq=10000, save_path="policies/policy9", name_prefix="policy9")
-    callback = SaveOnBestTrainingRewardCallback(check_freq=10000, save_path="policies/policy10")
-    model.learn(total_timesteps=30e6, callback=callback)
-    model.save("policies/policy10/policy10")
+    callback = SaveOnBestTrainingRewardCallback(check_freq=10000, save_path="policies/policy15")
+    model.learn(total_timesteps=1100000, callback=callback)
+    model.save("policies/policy15/policy15")
+
+def train_simple():
+    env = DroneEnv()
+    model = SAC("MlpPolicy", env, verbose=1, tensorboard_log="policies/policy22")
+    checkpoint_callback = CheckpointCallback(save_freq=100, save_path="policies/policy22", name_prefix="policy22")
+    model.learn(total_timesteps=100000)
+    model.save("policies/policy21/policy22")
 
 def profile():
     timesteps = 3000
     env = DroneEnv()
-    loaded_model = SAC.load('./policies/policy9/policy9.zip')
+    loaded_model = SAC.load('./policies/policy21/policy22.zip')
     observation, _ = env.reset()
     stored_obs = []
     for timestep in range(timesteps):
@@ -132,7 +139,7 @@ def profile():
 def calc_reward():
     timesteps = 3000
     env = DroneEnv()
-    loaded_model = PPO.load('./policies/policy8/policy8.zip')
+    loaded_model = PPO.load('./policies/policy19/policy19.zip')
     observation, _ = env.reset()
     total_reward = []
     
@@ -145,20 +152,23 @@ def calc_reward():
     print(f"Policy average reward: {avg_reward}")
     x = list(range(timesteps))
     y = total_reward
-    
+
     plt.plot(x, y)
     plt.xlabel("Timesteps")
     plt.ylabel("Reward")
-    plt.title("Reward over Timesteps - PPO 10M Training")
-    plt.savefig("Reward over Timesteps - PPO 10M Training.png", dpi=300)
+    plt.title("Reward over Timesteps - PPO 1M Training")
+    plt.savefig("Reward over Timesteps - PPO 1M Training.png", dpi=300)
     plt.show()
 
 
+
 if __name__ == "__main__":
-    mode = 'train'
+    mode = 'reward'
 
     if mode == 'train':
         train()
+    elif mode == 'train_simple':
+        train_simple()
     elif mode == "test":
         test()
     elif mode == "profile":

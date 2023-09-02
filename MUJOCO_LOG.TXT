@@ -4,3 +4,6 @@ WARNING: mju_openResource: unknown file '/Models/testxml.xml'
 Thu Jul  6 18:24:42 2023
 WARNING: mju_openResource: unknown file 'Models/testxml.xml'
 
+Mon Aug 21 23:02:33 2023
+ERROR: mjv_updateSceneState: m->nu changed
+
